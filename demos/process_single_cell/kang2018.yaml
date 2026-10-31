@@ -1,0 +1,22 @@
+project_name: kang2018
+np: 1
+skip_op_error: false
+# Relative paths resolve against the output directory; run_kang2018.py runs DJ there.
+ds_cache_dir: ./datasets-cache
+text_keys: [cell_id]
+dataset_path: ./kang2018.jsonl
+export_path: ./refined.jsonl
+process:
+  - single_cell_qc_filter:
+      exclude: &holdout {cell_type: CD4 T cells, label: stim}
+      report_path: ./qc_report.json
+  - single_cell_doublet_filter:
+      report_path: ./doublet_report.json
+  - single_cell_gene_mapper:
+      exclude: *holdout
+  - single_cell_normalize_mapper:
+      exclude: *holdout
+  - single_cell_hvg_mapper:
+      span: 0.3
+      exclude: *holdout
+      report_path: ./hvg_report.json

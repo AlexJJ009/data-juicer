@@ -49,6 +49,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+single_cell = [
+    "anndata>=0.10,<1",
+    "scanpy[scrublet]>=1.10,<2",
+    # Scanpy 1.12 calls getnnz; PyNNDescent 0.7 returns csr_array instead.
+    "pynndescent>=0.5.13,<0.7",
+    "scikit-misc>=0.3,<1",
+]
+
 # Generic ML & DL
 generic = [
     "torch==2.8.0",  # PyTorch
