@@ -10,7 +10,8 @@ from typing import Any
 
 from loguru import logger
 
-from data_juicer.ops.base_op import Filter, Mapper
+from data_juicer.ops.domain.fitted import FittedFilter as DomainFittedFilter
+from data_juicer.ops.domain.fitted import FittedMapper as DomainFittedMapper
 
 from .conversion import Sample, samples_to_anndata, validate_sample
 
@@ -88,14 +89,13 @@ class CellFields:
         raise NotImplementedError
 
 
-class FittedMapper(CellFields, Mapper):
+class FittedMapper(CellFields, DomainFittedMapper):
     """A DJ Mapper that fits on the complete dataset before parent run."""
 
     def run(self, dataset: Any, *, exporter: Any = None, tracer: Any = None) -> Any:
         """Fit dataset, then return the parent mapper's processed dataset."""
         start = perf_counter()
         before = _dimensions(dataset, self.genes_key)
-        self.fit(dataset)
         result = super().run(dataset, exporter=exporter, tracer=tracer)
         logger.info(
             "Single-cell stage: {}",
@@ -111,14 +111,13 @@ class FittedMapper(CellFields, Mapper):
         return result
 
 
-class FittedFilter(CellFields, Filter):
+class FittedFilter(CellFields, DomainFittedFilter):
     """A DJ Filter that fits globally and reports actual deletions by cell type."""
 
     def run(self, dataset: Any, *, exporter: Any = None, tracer: Any = None, reduce: bool = True) -> Any:
         """Fit dataset, run the parent filter, and return results with a deletion report."""
         start = perf_counter()
         dimensions = _dimensions(dataset, self.genes_key)
-        self.fit(dataset)
         before_types = dataset[self.cell_type_key]
         before = Counter(before_types)
         before_groups = Counter(zip(before_types, dataset[self.condition_key]))

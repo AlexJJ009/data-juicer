@@ -1,0 +1,33 @@
+project_name: topic2-protein
+np: 1
+skip_op_error: false
+turbo: true
+use_cache: false
+cache_compress: null
+ds_cache_dir: ./datasets-cache
+temp_dir: ./tmp
+text_keys: [sequence]
+dataset_path: ./input.jsonl
+export_path: ./refined.jsonl
+keep_stats_in_res_ds: true
+process:
+  - sequence_alphabet_filter:
+      max_ambiguous_ratio: 0.0
+      stats_export_path: ./alphabet_rows.jsonl
+  - text_length_filter:
+      text_key: sequence
+      min_len: 30
+      max_len: 10000
+      stats_export_path: ./length_rows.jsonl
+  - document_deduplicator:
+      text_key: sequence
+      num_proc: 4
+  - sequence_cluster_mapper:
+      identity: 0.95
+      coverage: 0.8
+      threads: 8
+      temp_dir: ./tmp
+  - general_field_filter:
+      num_proc: 4
+      filter_condition: 'is_representative == True'
+      stats_export_path: ./cluster_rows.jsonl

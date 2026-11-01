@@ -1,0 +1,51 @@
+project_name: topic2-qa
+np: 1
+skip_op_error: false
+strict_preflight: false
+use_cache: false
+cache_compress: null
+ds_cache_dir: ./datasets-cache
+temp_dir: ./tmp
+text_keys: [input]
+dataset_path: ./input
+export_path: ./refined.jsonl
+keep_stats_in_res_ds: true
+process:
+  - sequence_tag_extract_mapper:
+      text_key: input
+  - regex_field_extract_mapper:
+      source_key: data_no
+      target_key: task
+      patterns: ['^(.*)_\d{14}_']
+  - regex_field_extract_mapper:
+      source_key: output
+      target_key: label
+      patterns: ['(K\d{5})', 'annotated as ([^.]+)\.']
+  - document_deduplicator:
+      text_key: input
+  - sequence_alphabet_filter:
+      max_ambiguous_ratio: 0.0
+      stats_export_path: ./alphabet_rows.jsonl
+  - text_length_filter:
+      text_key: sequence
+      min_len: 30
+      max_len: 10000
+      stats_export_path: ./length_rows.jsonl
+  - qa_rule_consistency_filter:
+      mode: tag
+      rules:
+        - name: enzyme_requires_ec
+          question_regex: 'functional enzyme'
+          answer_regex: 'EC\s*:?\s*\d+\.\d+\.\d+\.(?:\d+|-)'
+        - name: cycle_requires_cycle
+          question_regex: 'biogeochemical cycles'
+          answer_regex: 'cycle'
+      stats_export_path: ./rule_rows.jsonl
+  - answer_template_stats_mapper:
+      patterns: ['K\d{5}', 'EC\s*:?\s*\d+\.\d+\.\d+\.(?:\d+|-)', '<protein>.*?<protein>']
+  - sequence_cluster_mapper:
+      identity: 0.5
+      coverage: 0.8
+      threads: 8
+      id_key: data_no
+      temp_dir: ./tmp
