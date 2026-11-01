@@ -140,7 +140,7 @@ def compact_run(directory: Path, kind: str, issues: IssueCounter) -> dict[str, A
                     for rule in rules:
                         category = f"rule:{rule['name']}"
                         issues.add(category, source, identifier if category in categories else None, totals[task])
-                elif stage == "cluster" or (stage == "final" and kind == "qa"):
+                elif stage == "cluster" or (stage == "final" and "cluster_id" in row and "cluster" not in snapshots):
                     redundant = not row["is_representative"]
                     issues.add("cluster_redundancy", source, identifier if redundant else None, totals[task])
                     if stage == "cluster":
@@ -200,7 +200,7 @@ def compact_run(directory: Path, kind: str, issues: IssueCounter) -> dict[str, A
                     if not bounds["min_len"] <= length <= bounds["max_len"]:
                         continue
                     identifier = row["seq_id"]
-                    duplicate = identifier not in identifiers["cluster"]
+                    duplicate = identifier not in identifiers.get("cluster", identifiers["final"])
                     duplicates[task] += int(duplicate)
                     issues.add("exact_duplicate", source, identifier if duplicate else None, kept["length"][task])
                     if duplicate:

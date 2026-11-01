@@ -26,7 +26,7 @@ def test_recipe_cli_execution(recipe: str, tmp_path: Path) -> None:
         ]
     else:
         rows = [
-            {"seq_id": str(index), "sequence": sequence, "gtdb.D_name": "Bacteria", "gtdb.G_name": None}
+            {"seq_id": str(index), "sequence": sequence + "A" * index, "gtdb.D_name": "Bacteria", "gtdb.G_name": None}
             for index in range(2)
         ]
     source.write_text("".join(json.dumps(row) + "\n" for row in rows))
@@ -63,9 +63,12 @@ def test_recipe_cli_execution(recipe: str, tmp_path: Path) -> None:
     )
     assert result.returncode == 0, result.stdout[-2000:] + result.stderr[-5000:]
     output = [json.loads(line) for line in (tmp_path / "refined.jsonl").read_text().splitlines()]
-    assert len(output) == (2 if recipe == "dna" else 1)
+    assert len(output) == (1 if recipe == "qa" else 2)
     if recipe != "dna":
         assert output[0]["cluster_id"] == (rows[0].get("data_no") or "0")
+    if recipe == "protein":
+        assert output[1]["cluster_id"] == "0"
+        assert output[1]["is_representative"] is False
     if recipe != "qa":
         assert output[0]["gtdb.D_name"] == "Bacteria"
         assert output[0]["gtdb.G_name"] is None

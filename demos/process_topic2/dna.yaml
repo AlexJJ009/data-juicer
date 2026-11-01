@@ -12,7 +12,7 @@ keep_stats_in_res_ds: true
 process:
   - sequence_alphabet_filter:
       seq_type: dna
-      max_ambiguous_ratio: 0.0
+      max_ambiguous_ratio: 1.0
       stats_export_path: ./alphabet_rows.jsonl
   - text_length_filter:
       text_key: sequence

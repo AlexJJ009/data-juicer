@@ -27,7 +27,3 @@ process:
       coverage: 0.8
       threads: 8
       temp_dir: ./tmp
-  - general_field_filter:
-      num_proc: 4
-      filter_condition: 'is_representative == True'
-      stats_export_path: ./cluster_rows.jsonl
